@@ -1,3 +1,13 @@
+import sys
+from pathlib import Path
+
+# Streamlit executes this file as a script, which otherwise places only
+# ``dashboard/`` on sys.path. Add the repository root so absolute
+# ``dashboard.*`` imports work for both local and Docker launches.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import streamlit as st
 from dashboard.client import get, safe
 from dashboard.tabs import loan_lookup, optimizer, fairness, drift, model_info

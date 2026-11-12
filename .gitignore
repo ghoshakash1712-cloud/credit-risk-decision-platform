@@ -1,22 +1,61 @@
-# Project specific .gitignore
+# -----------------------------------------------------------------------------
+# Credit Risk Decision Platform: local data and generated ML outputs
+# -----------------------------------------------------------------------------
+# Freddie Mac raw files (large/licensed; never commit)
+/DataSet/
+/data/
+*.zip
+
+# Reproducible pipeline outputs; rebuild with `make all`
+/artifacts/
+/reports/
+*.parquet
+*.feather
+
+# Exported/temporary model files. The deployed model belongs under artifacts/.
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.h5
+*.pt
+*.pth
+
+# -----------------------------------------------------------------------------
+# Secrets, local configuration, and local environments
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+
+# Conda, virtualenv, and other local Python environments
+.conda/
+.mamba/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# -----------------------------------------------------------------------------
+# Editor, operating-system, and temporary files
+# -----------------------------------------------------------------------------
 .idea/
 .vscode/
-*.zip
+.DS_Store
+Thumbs.db
 *.lnk
 *.xlsx
-# put any (temporary) files to ignore in ignore directory
+*.tmp
+*.swp
+*.swo
+*.log
 ignore/
-
-# secret configuration
-.streamlit/secrets.toml
-
-
-# data files too large for source control
-# (see README.md or jupyter notebooks for data sources)
-data/
-artifacts/
-reports/
-DataSet/
+logs/
 
 
 # add pickled models to git for use in flask API
@@ -153,15 +192,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -185,10 +215,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintainted in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/

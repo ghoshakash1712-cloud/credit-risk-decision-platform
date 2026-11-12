@@ -167,7 +167,7 @@ Freddie Mac raw loan-level data files should be placed in either the `DataSet/` 
 - **Option A (Pre-packaged):** Place the 50,000-loan sampled archives `sample_2015.zip` through `sample_2021.zip` directly into `data/raw/`.
 - **Option B (Raw Freddie Mac files):** If starting from the 129 raw monthly performance and origination files from Freddie Mac Single-Family Dataset (Release 48), place them in the `DataSet/` folder and run:
   ```bash
-  python src/pipeline/prepare_raw.py
+  python -m src.pipeline.prepare_raw
   ```
   *(This automatically cleans and samples the vintages into `data/raw/sample_YYYY.zip`).*
 
