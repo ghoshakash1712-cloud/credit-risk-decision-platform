@@ -14,6 +14,10 @@ ignore/
 # data files too large for source control
 # (see README.md or jupyter notebooks for data sources)
 data/
+artifacts/
+reports/
+DataSet/
+
 
 # add pickled models to git for use in flask API
 # saved_models/

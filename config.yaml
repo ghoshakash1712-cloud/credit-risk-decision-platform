@@ -1,0 +1,90 @@
+seed: 42
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+  artifacts: artifacts
+  reports: reports
+  schema: schema
+
+data:
+  release: "48"
+  vintages:
+    train: [2015, 2016, 2017]
+    valid: [2018]
+    oot: [2019]
+    stress: [2020, 2021]
+  label_window_months: 24
+  default_delinquency_status: 3              # 90+ days
+  credit_event_zero_balance_codes: [2, 3, 9, 15, 16]
+  loss_zero_balance_codes: [2, 3, 9, 15]     # codes that carry an Actual Loss value
+  exclude_zero_balance_codes: [96]
+  not_available:
+    fico: [9999]
+    mi_pct: [999]
+    n_units: [99]
+    orig_cltv: [999]
+    orig_dti: [999]
+    orig_ltv: [999]
+    n_borrowers: [99]
+    property_type: ["99"]
+    first_time_homebuyer: ["9"]
+    occupancy: ["9"]
+    channel: ["9"]
+    loan_purpose: ["9"]
+    property_valuation_method: ["7"]
+
+features:
+  numeric: [fico, mi_pct, n_units, orig_cltv, orig_dti, orig_upb, orig_ltv,
+            orig_rate, orig_term, n_borrowers, cltv_minus_ltv, rate_vs_quarter_median]
+  categorical: [first_time_homebuyer, occupancy, channel, ppm_flag, property_state,
+                property_type, loan_purpose, seller_name, program_indicator,
+                property_valuation_method, interest_only, super_conforming]
+  borrower_cap: 2
+
+model:
+  tuning_iterations: 20
+  cv_folds: 5
+  cv_n_estimators: 400
+  max_estimators: 3000
+  early_stopping_rounds: 50
+  sanity: {oot_auc_floor: 0.60, oot_auc_drop_warn: 0.05}
+
+cost:
+  default_fp_cost_pct: 2.0                   # illustrative placeholder (OP-04)
+  slider: {fp: {min: 0.5, max: 10.0, step: 0.5}, fn: {min: 5.0, max: 60.0, step: 1.0}}
+  calibration_warning_factor: 2.0
+  curve_points: 200
+
+fairness:
+  size_rule: {min_loans: 500, min_defaults: 30}
+  flags: {di_ratio_min: 0.80, eod_max: 0.10, calibration_ratio_range: [0.80, 1.25]}
+  attributes:
+    - {key: first_time_homebuyer, label: First-time homebuyer}
+    - {key: borrower_count,       label: Borrower count}
+    - {key: occupancy,            label: Occupancy}
+    - {key: loan_purpose,         label: Loan purpose}
+  notes:
+    occupancy: "Investment properties are genuinely riskier; some disparity is expected."
+    loan_purpose: "Purpose affects risk; a gap is a prompt to investigate, not proof of bias."
+    first_time_homebuyer: "First-time buyer status correlates with age and wealth; investigate disparities."
+    borrower_count: "Number of borrowers correlates with marital status; investigate disparities."
+
+drift:
+  bands: {warn: 0.10, retrain: 0.20}
+  top_features: 10
+  min_sample: 1000
+  smoothing_floor: 0.0001
+  structural_features: [property_valuation_method]
+  shocks:
+    debt_stress:          {column: orig_dti,   op: add, cap: 65,   mild: 3,   moderate: 6,   severe: 10}
+    credit_deterioration: {column: fico,       op: add, clip: [300, 850], mild: -15, moderate: -30, severe: -50}
+    rate_shock:           {column: orig_rate,  op: add, mild: 0.5, moderate: 1.0, severe: 2.0}
+    leverage_squeeze:     {columns: [orig_ltv, orig_cltv], op: add, cap: 100, mild: 3, moderate: 6, severe: 10}
+
+api:
+  default_limit: 100
+  max_limit: 500
+  self_check_rows: 100
+  self_check_tolerance: 1.0e-6

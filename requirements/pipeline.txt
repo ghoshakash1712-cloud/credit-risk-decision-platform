@@ -1,0 +1,10 @@
+pandas
+numpy
+pyarrow
+scikit-learn
+lightgbm
+scipy
+fairlearn
+pyyaml
+pytest
+-e .

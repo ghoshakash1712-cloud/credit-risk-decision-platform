@@ -1,3 +1,1 @@
-from flask import Flask
-from .app import app
-from .models import *
+"""Credit Risk Scoring System API package."""

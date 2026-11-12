@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crs-common"
+version = "0.1.0"
+description = "Common package for Credit Risk Scoring System"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools.package-dir]
+"crs_common" = "src/common"
+"src" = "src"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "crs_common*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

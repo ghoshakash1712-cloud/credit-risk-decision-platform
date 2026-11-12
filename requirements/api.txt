@@ -1,0 +1,7 @@
+flask
+gunicorn
+pandas
+numpy
+pyarrow
+lightgbm
+pyyaml
