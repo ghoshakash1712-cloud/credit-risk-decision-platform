@@ -1,6 +1,6 @@
-# 🏦 Credit Risk Scoring System: Freddie Mac Single-Family Loan-Level Dataset
+# 🏦 Credit Risk Decision Platform: Freddie Mac Single-Family Loan-Level Dataset
 
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.14-blue.svg)](https://www.python.org/)
+[![Conda](https://img.shields.io/badge/environment-Conda-44A833.svg)](https://conda-forge.org/)
 [![LightGBM](https://img.shields.io/badge/Model-LightGBM-success.svg)](https://lightgbm.readthedocs.io/)
 [![Fairlearn](https://img.shields.io/badge/Fairness-Fairlearn-orange.svg)](https://fairlearn.org/)
 [![Flask](https://img.shields.io/badge/API-Flask%203.1-lightgrey.svg)](https://flask.palletsprojects.com/)
@@ -67,7 +67,7 @@ Traditional credit scoring models evaluate statistical metrics like AUC-ROC in i
 1. **Unweighted Probabilities:** Model trained without artificial class weights (`is_unbalance=False`, `scale_pos_weight=1.0`) so predicted probabilities remain well-calibrated empirical default risks ($P(Y=1|X)$).
 2. **Strict Leakage Prevention:** Feature extraction utilizes only origination characteristics available at underwriting. Zero monthly performance file fields exist in feature vectors (`TS-04`).
 3. **Thin Client Design:** The dashboard performs zero direct file reads or model computations, interacting exclusively via the versioned Flask REST API (`UI-13`).
-4. **Startup Self-Check:** The API verifies at startup that the serialized model reproduces stored holdout probabilities within $10^{-4}$ tolerance, halting immediately if artifacts are corrupted or mismatched (`MD-13`, `TS-09`).
+4. **Startup Self-Check:** The API verifies at startup that the serialized model reproduces stored holdout probabilities within $10^{-6}$ tolerance, halting immediately if artifacts are corrupted or mismatched (`MD-13`, `TS-09`).
 
 ---
 
@@ -115,11 +115,7 @@ Follow these step-by-step instructions to set up, build, and run the project fro
 ### Step 1: System Prerequisites
 Ensure you have the following installed on your machine:
 - **Git:** [Download Git](https://git-scm.com/)
-- **Python 3.11, 3.12, or 3.14:** [Download Python](https://www.python.org/downloads/) (ensure **"Add Python to PATH"** is checked during Windows installation).
-- **C++ Compiler / OpenMP (Linux/macOS only):**
-  - **Ubuntu / Debian:** `sudo apt-get update && sudo apt-get install -y build-essential libgomp1`
-  - **macOS:** `brew install libomp`
-  - **Windows:** Standard Python wheels include OpenMP automatically.
+- **Conda distribution:** Install [Miniforge](https://github.com/conda-forge/miniforge#install) (recommended) or Miniconda. The supplied `environment.yml` creates a Python 3.11 environment and installs the required OpenMP/LightGBM runtime dependencies from `conda-forge`; a separate system Python installation is not required.
 - **Docker & Docker Compose (Optional):** [Download Docker Desktop](https://www.docker.com/products/docker-desktop/) if you prefer containerized execution.
 
 ---
@@ -127,54 +123,42 @@ Ensure you have the following installed on your machine:
 ### Step 2: Clone the Repository
 Open your terminal (PowerShell on Windows, Bash/Zsh on Linux/macOS):
 ```bash
-git clone https://github.com/<your-username>/freddie-mac-credit-risk-scoring.git
-cd freddie-mac-credit-risk-scoring
+git clone https://github.com/hineni26/credit-risk-decision-platform.git
+cd credit-risk-decision-platform
 ```
 
 ---
 
-### Step 3: Create & Activate Virtual Environment
+### Step 3: Create & Activate the Conda Environment
 
-#### On Windows (PowerShell):
-```powershell
-# Create virtual environment
-python -m venv .venv
+From the repository root, create the environment defined in `environment.yml`:
 
-# If script execution is restricted, enable it for this process:
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-
-# Activate virtual environment
-.\.venv\Scripts\Activate.ps1
-```
-
-#### On Linux / macOS (Bash / Zsh):
 ```bash
-# Create virtual environment
-python3 -m venv .venv
-
-# Activate virtual environment
-source .venv/bin/activate
+conda env create -f environment.yml
+conda activate credit-risk-decision-platform
 ```
 
-*(Your terminal prompt should now show `(.venv)`).*
+The activation command is the same in PowerShell, Command Prompt, Bash, and Zsh. If `conda activate` is not recognized, close and reopen the terminal after installing Conda, then run `conda init` for your shell.
+
+To refresh an existing environment after dependency changes:
+
+```bash
+conda env update -f environment.yml --prune
+```
 
 ---
 
-### Step 4: Install Dependencies & Editable Package
-Install the pinned requirements and register the shared `crs_common` package in editable mode:
+### Step 4: Verify the Active Environment
+
+Confirm that commands resolve from Conda before running the project:
 
 ```bash
-# Upgrade pip, setuptools, and wheel
-python -m pip install --upgrade pip setuptools wheel
-
-# Install component requirements
-pip install -r requirements/pipeline.txt
-pip install -r requirements/api.txt
-pip install -r requirements/dashboard.txt
-
-# Install the repository as an editable package
-pip install -e .
+conda env list
+python --version
+pytest --version
 ```
+
+`python` in the remaining commands means the Python interpreter provided by the active `credit-risk-decision-platform` Conda environment, not a globally installed Python or a `.venv`.
 
 ---
 
@@ -197,7 +181,7 @@ Run the end-to-end data processing and model pipeline. You can run all steps via
 make all
 ```
 
-#### Or Using Python Directly:
+#### Or run the pipeline modules directly in the active Conda environment:
 ```bash
 # 1. Ingest raw files and validate schema column counts
 python -m src.pipeline.ingest_data
@@ -229,8 +213,9 @@ python -m api.app
 - **Health check:** Open `http://127.0.0.1:8000/v1/health` in your browser.
 
 #### 2. Start the Streamlit Dashboard (Terminal 2)
-Open a second terminal, activate `.venv`, and run:
+Open a second terminal, change to the repository directory, activate the Conda environment, and run:
 ```bash
+conda activate credit-risk-decision-platform
 streamlit run dashboard/app.py
 ```
 - **Web UI:** Automatically opens in your browser at `http://localhost:8501`.
@@ -238,7 +223,7 @@ streamlit run dashboard/app.py
 ---
 
 ### Step 8: Alternative — Run with Docker Compose
-If you have Docker installed, you can launch the entire stack (API + Dashboard) with a single command without configuring local Python environments:
+If you have Docker installed, you can launch the entire stack (API + Dashboard) with a single command without creating the local Conda environment:
 
 ```bash
 docker compose up --build
@@ -249,7 +234,7 @@ docker compose up --build
 ---
 
 ### Step 9: Run Automated Verification Tests
-Verify that all unit tests, mathematical properties, and integration contracts pass:
+After completing Step 6, verify that all unit tests, mathematical properties, and integration contracts pass. The integration tests and data-dependent tests require the generated `data/processed/` and `artifacts/` files:
 
 ```bash
 pytest -v
@@ -314,7 +299,8 @@ tests/unit/test_simulation.py::test_simulation_psi_properties PASSED     [100%]
 │   ├── client.py                    # Cached API client with retry & stale fallbacks
 │   └── Dockerfile                   # Streamlit lightweight container
 │
-├── requirements/                    # Pinned environment specifications
+├── environment.yml                  # Conda environment definition
+├── requirements/                    # Pip requirement lists used by Docker images
 │   ├── api.txt                      # Flask, Gunicorn, LightGBM, Pandas, PyArrow
 │   ├── dashboard.txt                # Streamlit, Altair, Requests
 │   └── pipeline.txt                 # Scikit-learn, Fairlearn, Scipy, LightGBM

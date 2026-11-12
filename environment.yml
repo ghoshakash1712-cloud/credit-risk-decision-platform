@@ -1,0 +1,20 @@
+name: credit-risk-decision-platform
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - pyarrow
+  - scikit-learn
+  - lightgbm
+  - scipy
+  - fairlearn
+  - pyyaml
+  - pytest
+  - flask
+  - streamlit
+  - requests
+  - altair
